@@ -11,6 +11,8 @@
 
 This document is a community health reference compiled for those seeking to understand the body through a natural, plant-based, and alkaline lens. The philosophies presented here draw on publicly known teachings from Dr. Sebi (Alfredo Darrington Bowman, 1933–2016), a Honduran-born herbalist and self-educated healer, and Yahki Awakened, an educator and wellness advocate focused on African and Indigenous healing traditions.
 
+**For the full deep breakdown of what sickness truly is and a detailed system-by-system analysis of the body, see → [BODY_SYSTEMS_AND_DISEASE.md](./BODY_SYSTEMS_AND_DISEASE.md)**
+
 ---
 
 ## Part One: Understanding the Body — Dr. Sebi's Framework
