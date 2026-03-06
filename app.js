@@ -5,12 +5,10 @@
 /* ── Constants ──────────────────────────────────────────────────── */
 const MIN_NODE_SCALE          = 0.01;  // prevent scale collapsing to 0
 const MIN_SCROLL_HEIGHT        = 1;     // floor for division; avoids ÷0 on short pages
-const BURST_COUNT              = 50;    // particles per click explosion
-const BURST_LIFETIME           = 55;    // frames until burst fully fades
 const EDGE_STRIDE              = 6;     // floats per edge in lineArr (x1,y1,z1,x2,y2,z2)
-const MOUSE_PARALLAX_X         = 4.5;  // camera parallax range on X axis
-const MOUSE_PARALLAX_Y         = 3.2;  // camera parallax range on Y axis
-const CAMERA_LERP_FACTOR       = 0.040; // camera position smoothing (higher = snappier)
+const MOUSE_PARALLAX_X         = 2.0;  // camera parallax range on X axis
+const MOUSE_PARALLAX_Y         = 1.4;  // camera parallax range on Y axis
+const CAMERA_LERP_FACTOR       = 0.025; // camera position smoothing (higher = snappier)
 const RING_LAG_FACTOR          = 0.10;  // cursor ring lerp speed (0 = frozen, 1 = instant)
 const COUNTER_ANIMATION_STEPS  = 55;    // number of increments for the hero stat counters
 
@@ -51,7 +49,7 @@ scene.add(goldLight);
 /* ──────────────────────────────────────────────────────────────
    PARTICLE FIELD  (background cellular "haze")
    ────────────────────────────────────────────────────────────── */
-const PARTICLE_COUNT = 6000;
+const PARTICLE_COUNT = 1200;
 const pGeo = new THREE.BufferGeometry();
 const pPos    = new Float32Array(PARTICLE_COUNT * 3);
 const pColors = new Float32Array(PARTICLE_COUNT * 3);
@@ -89,7 +87,7 @@ scene.add(particles);
 /* ──────────────────────────────────────────────────────────────
    LYMPHATIC NETWORK  (nodes + connecting lines)
    ────────────────────────────────────────────────────────────── */
-const NODE_COUNT = 90;
+const NODE_COUNT = 40;
 const nodeVecs = [];
 
 for (let i = 0; i < NODE_COUNT; i++) {
@@ -188,92 +186,11 @@ const orbData = ORB_SPECS.map(({ pos, color, r }) => {
   return { mesh, ring, phase: Math.random() * Math.PI * 2 };
 });
 
-/* ──────────────────────────────────────────────────────────────
-   DNA DOUBLE HELIX  (two intertwined tubes + rungs)
-   ────────────────────────────────────────────────────────────── */
-const DNA_STEPS  = 240;
-const dnaGroup   = new THREE.Group();
-
-for (let strand = 0; strand < 2; strand++) {
-  const pts = [];
-  for (let i = 0; i < DNA_STEPS; i++) {
-    const t      = (i / DNA_STEPS) * Math.PI * 10;
-    const offset = strand * Math.PI;
-    pts.push(new THREE.Vector3(
-      Math.cos(t + offset) * 1.8,
-      (i / DNA_STEPS) * 38 - 19,
-      Math.sin(t + offset) * 1.8,
-    ));
-  }
-  const curve   = new THREE.CatmullRomCurve3(pts);
-  const tubeGeo = new THREE.TubeGeometry(curve, 260, 0.048, 6, false);
-  const tubeMat = new THREE.MeshBasicMaterial({
-    color:       strand === 0 ? 0x00e87a : 0xf5a623,
-    transparent: true,
-    opacity:     0.58,
-  });
-  dnaGroup.add(new THREE.Mesh(tubeGeo, tubeMat));
-}
-
-// Rungs (cross-links between strands)
-const RUNG_COUNT = 30;
-for (let i = 0; i < RUNG_COUNT; i++) {
-  const frac    = i / RUNG_COUNT;
-  const t       = frac * Math.PI * 10;
-  const y       = frac * 38 - 19;
-  const rungGeo = new THREE.BufferGeometry();
-  rungGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-    Math.cos(t) * 1.8,            y, Math.sin(t) * 1.8,
-    Math.cos(t + Math.PI) * 1.8,  y, Math.sin(t + Math.PI) * 1.8,
-  ]), 3));
-  dnaGroup.add(new THREE.LineSegments(rungGeo, new THREE.LineBasicMaterial({
-    color: 0xffffff, transparent: true, opacity: 0.16,
-  })));
-}
-
-dnaGroup.position.set(-15, 0, -10);
-scene.add(dnaGroup);
-
-/* ──────────────────────────────────────────────────────────────
-   WIREFRAME CELL SHAPES  (large structural background forms)
-   ────────────────────────────────────────────────────────────── */
-const cellIco = new THREE.Mesh(
-  new THREE.IcosahedronGeometry(6, 1),
-  new THREE.MeshBasicMaterial({
-    color: 0x00e87a, wireframe: true, transparent: true, opacity: 0.038,
-  }),
-);
-cellIco.position.set(10, -2, -14);
-scene.add(cellIco);
-
-const cellOct = new THREE.Mesh(
-  new THREE.OctahedronGeometry(8, 2),
-  new THREE.MeshBasicMaterial({
-    color: 0xf5a623, wireframe: true, transparent: true, opacity: 0.025,
-  }),
-);
-cellOct.position.set(-12, 4, -18);
-scene.add(cellOct);
-
-/* ──────────────────────────────────────────────────────────────
-   CURSOR ORB  (glowing sphere that tracks the mouse in 3D)
-   ────────────────────────────────────────────────────────────── */
-const cursorOrb = new THREE.Mesh(
-  new THREE.SphereGeometry(0.22, 14, 14),
-  new THREE.MeshBasicMaterial({ color: 0x00e87a, transparent: true, opacity: 0.90 }),
-);
-scene.add(cursorOrb);
-
-const cursorRing = new THREE.Mesh(
-  new THREE.TorusGeometry(0.58, 0.020, 8, 32),
-  new THREE.MeshBasicMaterial({ color: 0x00e87a, transparent: true, opacity: 0.42 }),
-);
-scene.add(cursorRing);
 
 /* ──────────────────────────────────────────────────────────────
    SIGNAL PULSES  (dots that travel along lymph network edges)
    ────────────────────────────────────────────────────────────── */
-const PULSE_COUNT = 24;
+const PULSE_COUNT = 6;
 const pulseData   = Array.from({ length: PULSE_COUNT }, () => {
   const isGold = Math.random() > 0.65;
   const mesh   = new THREE.Mesh(
@@ -296,7 +213,7 @@ const pulseData   = Array.from({ length: PULSE_COUNT }, () => {
 /* ──────────────────────────────────────────────────────────────
    SHOOTING STARS  (fast streak lines that reset position)
    ────────────────────────────────────────────────────────────── */
-const STAR_COUNT = 7;
+const STAR_COUNT = 4;
 const starData   = Array.from({ length: STAR_COUNT }, () => {
   const geo  = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0,0,0, 2.2,0,0]), 3));
@@ -319,47 +236,6 @@ const starData   = Array.from({ length: STAR_COUNT }, () => {
   line.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), rawSpd.clone().normalize());
   scene.add(line);
   return { line, spd: rawSpd, life: Math.random() * 4, maxLife: 3 + Math.random() * 2.5 };
-});
-
-/* ──────────────────────────────────────────────────────────────
-   CLICK PARTICLE BURST
-   ────────────────────────────────────────────────────────────── */
-const clickBursts = [];
-
-window.addEventListener('click', e => {
-  // Map screen position to approximate 3D world coords (z ≈ 8)
-  const cx = (e.clientX / window.innerWidth  - 0.5) *  28;
-  const cy = -(e.clientY / window.innerHeight - 0.5) * 18;
-
-  const burstPos = new Float32Array(BURST_COUNT * 3);
-  const burstVel = [];
-
-  for (let i = 0; i < BURST_COUNT; i++) {
-    burstPos[i * 3]     = cx;
-    burstPos[i * 3 + 1] = cy;
-    burstPos[i * 3 + 2] = 8;
-    const theta = Math.random() * Math.PI * 2;
-    const phi   = Math.random() * Math.PI;
-    const speed = 0.12 + Math.random() * 0.28;
-    burstVel.push(new THREE.Vector3(
-      Math.sin(phi) * Math.cos(theta) * speed,
-      Math.sin(phi) * Math.sin(theta) * speed,
-      Math.cos(phi) * speed * 0.3,
-    ));
-  }
-
-  const bGeo = new THREE.BufferGeometry();
-  bGeo.setAttribute('position', new THREE.BufferAttribute(burstPos, 3));
-  const bMat = new THREE.PointsMaterial({
-    size:           0.17,
-    color:          Math.random() < 0.65 ? 0x00e87a : 0xf5a623,
-    transparent:    true,
-    opacity:        1.0,
-    sizeAttenuation: true,
-  });
-  const bPts = new THREE.Points(bGeo, bMat);
-  scene.add(bPts);
-  clickBursts.push({ pts: bPts, vel: burstVel, age: 0 });
 });
 
 /* ──────────────────────────────────────────────────────────────
@@ -484,51 +360,6 @@ function animate() {
   camera.position.z  = 22 - scrollPct * 9;
   camera.lookAt(scene.position);
 
-  /* DNA helix — slow continuous rotation */
-  dnaGroup.rotation.y = t * 0.065;
-
-  /* Wireframe cells — lazy drift rotation */
-  cellIco.rotation.x = t * 0.018;
-  cellIco.rotation.y = t * 0.030;
-  cellOct.rotation.x = t * 0.013;
-  cellOct.rotation.z = t * 0.021;
-
-  /* Cursor orb — lag-follows the mouse */
-  cursorOrb.position.x += (mouseX * 14 - cursorOrb.position.x) * 0.14;
-  cursorOrb.position.y += (-mouseY * 9  - cursorOrb.position.y) * 0.14;
-  cursorOrb.position.z  = 10;
-  cursorOrb.scale.setScalar(1 + Math.sin(t * 4.5) * 0.18);
-
-  cursorRing.position.copy(cursorOrb.position);
-  cursorRing.rotation.x = t * 1.2;
-  cursorRing.rotation.y = t * 0.8;
-  cursorRing.material.opacity = 0.22 + Math.abs(Math.sin(t * 3)) * 0.20;
-
-  /* Click burst particles — advance & fade */
-  for (let b = clickBursts.length - 1; b >= 0; b--) {
-    const burst = clickBursts[b];
-    burst.age++;
-    const posAttr = burst.pts.geometry.getAttribute('position');
-    for (let i = 0; i < BURST_COUNT; i++) {
-      posAttr.array[i * 3]     += burst.vel[i].x;
-      posAttr.array[i * 3 + 1] += burst.vel[i].y;
-      posAttr.array[i * 3 + 2] += burst.vel[i].z;
-      burst.vel[i].multiplyScalar(0.96); // dampen over time
-    }
-    posAttr.needsUpdate = true;
-    burst.pts.material.opacity = Math.max(0, 1 - burst.age / BURST_LIFETIME);
-    if (burst.age >= BURST_LIFETIME) {
-      scene.remove(burst.pts);
-      burst.pts.geometry.dispose();
-      burst.pts.material.dispose();
-      clickBursts.splice(b, 1);
-    }
-  }
-
-  /* FOV breathing — subtle inhale/exhale feel */
-  camera.fov = 60 + Math.sin(t * 0.14) * 2.2;
-  camera.updateProjectionMatrix();
-
   renderer.render(scene, camera);
 }
 
@@ -563,7 +394,7 @@ document.querySelectorAll('.card-3d').forEach(card => {
     card.style.setProperty('--shine-x', `${normX * 100}%`);
     card.style.setProperty('--shine-y', `${normY * 100}%`);
     card.style.transform =
-      `perspective(640px) rotateX(${-(normY - 0.5) * 20}deg) rotateY(${(normX - 0.5) * 20}deg) translateZ(18px)`;
+      `perspective(640px) rotateX(${-(normY - 0.5) * 12}deg) rotateY(${(normX - 0.5) * 12}deg) translateZ(10px)`;
   });
 
   card.addEventListener('mouseleave', () => {
@@ -712,3 +543,225 @@ document.querySelectorAll('.stats-strip').forEach(el => statsObs.observe(el));
   }
   hero.appendChild(wrap);
 })();
+
+/* ──────────────────────────────────────────────────────────────
+   KNOWLEDGE WEB  (interactive 2D canvas spider-web navigator)
+   Click any node to smooth-scroll to that section.
+   ────────────────────────────────────────────────────────────── */
+(function initWebNav() {
+  const wc = document.getElementById('web-canvas');
+  if (!wc) return;
+  const ctx = wc.getContext('2d');
+
+  // Node definitions: angle in turns (0 = right, 0.25 = down), dist = fraction of radius
+  const NODES = [
+    { id: 'center',   label: ['Your', 'Body'],          target: null,        angle: 0,      dist: 0 },
+    { id: 'truth',    label: ['Core', 'Teaching'],      target: '#truth',    angle: -0.25,  dist: 1 },
+    { id: 'yahki',    label: ['Yahki', 'Awakened'],     target: '#yahki',    angle: -0.07,  dist: 1 },
+    { id: 'electric', label: ['Dr. Sebi'],              target: '#electric', angle:  0.12,  dist: 1 },
+    { id: 'acid',     label: ['Acid &', 'Alkaline'],    target: '#acid',     angle:  0.30,  dist: 1 },
+    { id: 'foods',    label: ['Electric', 'Foods'],     target: '#foods',    angle:  0.46,  dist: 1 },
+    { id: 'lymph',    label: ['Lymphatic', 'System'],   target: '#lymph',    angle: -0.43,  dist: 1 },
+    { id: 'healing',  label: ['Healing', 'Path'],       target: '#healing',  angle: -0.60,  dist: 1 },
+  ];
+
+  // Color per node
+  const NODE_COLORS = {
+    center: '#00e87a', truth: '#00e87a', yahki: '#f5a623',
+    electric: '#f5a623', acid: '#7c3aed', foods: '#00e87a',
+    lymph: '#7c3aed', healing: '#00e87a',
+  };
+
+  // Edge pairs [fromIdx, toIdx]
+  const EDGES = [
+    [0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],   // hub spokes
+    [1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,1],   // outer ring
+    [1,4],[2,5],[3,6],                            // cross-web diagonals
+  ];
+
+  let W, H, CX, CY, RAD;
+  let hoverIdx = -1;
+  let animT = 0;
+
+  function resize() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);  // reset any previous scaling
+    W = wc.parentElement.offsetWidth;
+    H = Math.min(Math.round(W * 0.52), 500);
+    wc.width  = W * window.devicePixelRatio;
+    wc.height = H * window.devicePixelRatio;
+    wc.style.width  = W + 'px';
+    wc.style.height = H + 'px';
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    CX  = W * 0.5;
+    CY  = H * 0.5;
+    RAD = Math.min(W, H) * 0.38;
+    NODES.forEach(n => {
+      const a = n.angle * Math.PI * 2;
+      n.px = CX + Math.cos(a) * RAD * n.dist;
+      n.py = CY + Math.sin(a) * RAD * n.dist;
+    });
+  }
+
+  function nodeR(i) { return i === 0 ? 26 : 17; }
+
+  function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    return `${r},${g},${b}`;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Edges
+    EDGES.forEach(([ai, bi]) => {
+      const a = NODES[ai], b = NODES[bi];
+      const isLit = hoverIdx === ai || hoverIdx === bi;
+      ctx.beginPath();
+      ctx.moveTo(a.px, a.py);
+      ctx.lineTo(b.px, b.py);
+      ctx.strokeStyle = isLit
+        ? `rgba(0,232,122,0.55)`
+        : `rgba(0,232,122,0.12)`;
+      ctx.lineWidth = isLit ? 1.5 : 0.7;
+      ctx.stroke();
+    });
+
+    // Nodes
+    NODES.forEach((n, i) => {
+      const r      = nodeR(i);
+      const isHov  = hoverIdx === i;
+      const color  = NODE_COLORS[n.id];
+      const rgb    = hexToRgb(color);
+      const pulse  = 1 + Math.sin(animT * 1.6 + i * 0.85) * (i === 0 ? 0.10 : 0.06);
+      const dr     = r * pulse;
+
+      // Glow halo
+      const grd = ctx.createRadialGradient(n.px, n.py, 0, n.px, n.py, dr * 2.4);
+      grd.addColorStop(0, `rgba(${rgb},${isHov ? 0.30 : 0.14})`);
+      grd.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.beginPath();
+      ctx.arc(n.px, n.py, dr * 2.4, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+
+      // Circle fill
+      ctx.beginPath();
+      ctx.arc(n.px, n.py, dr, 0, Math.PI * 2);
+      ctx.fillStyle = isHov ? `rgba(${rgb},0.32)` : `rgba(${rgb},0.10)`;
+      ctx.fill();
+
+      // Circle border
+      ctx.beginPath();
+      ctx.arc(n.px, n.py, dr, 0, Math.PI * 2);
+      ctx.strokeStyle = isHov ? color : `rgba(${rgb},0.65)`;
+      ctx.lineWidth   = isHov ? 2.2 : 1.4;
+      ctx.stroke();
+
+      // Label
+      ctx.fillStyle    = isHov ? '#ffffff' : color;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      const fontSize   = i === 0 ? 11 : 9;
+      ctx.font         = `600 ${fontSize}px 'Space Grotesk', sans-serif`;
+      if (n.label.length === 1) {
+        ctx.fillText(n.label[0], n.px, n.py);
+      } else {
+        ctx.fillText(n.label[0], n.px, n.py - 5.5);
+        ctx.fillText(n.label[1], n.px, n.py + 5.5);
+      }
+
+      // "tap to visit" hint on hover
+      if (isHov && i > 0) {
+        ctx.fillStyle    = `rgba(0,232,122,0.70)`;
+        ctx.font         = `500 9px Inter, sans-serif`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText('→ tap to visit', n.px, n.py + dr + 5);
+      }
+    });
+  }
+
+  let rafId;
+  function loop(ts) {
+    animT = ts / 1000;
+    draw();
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function hitTest(mx, my) {
+    for (let i = 0; i < NODES.length; i++) {
+      const n  = NODES[i];
+      const r  = nodeR(i) * 1.5;
+      const dx = mx - n.px, dy = my - n.py;
+      if (dx * dx + dy * dy <= r * r) return i;
+    }
+    return -1;
+  }
+
+  function navigateTo(idx) {
+    if (idx < 0) return;
+    const t = NODES[idx].target;
+    if (t) {
+      const el = document.querySelector(t);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  wc.addEventListener('mousemove', e => {
+    const rect = wc.getBoundingClientRect();
+    hoverIdx = hitTest(e.clientX - rect.left, e.clientY - rect.top);
+    wc.style.cursor = hoverIdx > 0 ? 'pointer' : 'default';
+  });
+  wc.addEventListener('mouseleave', () => { hoverIdx = -1; });
+  wc.addEventListener('click', e => {
+    const rect = wc.getBoundingClientRect();
+    navigateTo(hitTest(e.clientX - rect.left, e.clientY - rect.top));
+  });
+  wc.addEventListener('touchend', e => {
+    const touch = e.changedTouches[0];
+    const rect  = wc.getBoundingClientRect();
+    const idx   = hitTest(touch.clientX - rect.left, touch.clientY - rect.top);
+    if (idx >= 0) {
+      navigateTo(idx);
+      e.preventDefault();  // only block scroll when a node was actually hit
+    }
+  }, { passive: false });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(rafId);        // stop current frame immediately
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      resize();
+      rafId = requestAnimationFrame(loop);
+    }, 120);
+  });
+
+  resize();
+  rafId = requestAnimationFrame(loop);
+})();
+
+/* ──────────────────────────────────────────────────────────────
+   DISEASE CARD EXPAND / COLLAPSE
+   Click a disease-card to reveal a brief explanation paragraph.
+   ────────────────────────────────────────────────────────────── */
+document.querySelectorAll('.disease-card').forEach(card => {
+  const detail = card.querySelector('.disease-detail');
+  if (!detail) return;
+
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('aria-expanded', 'false');
+
+  function toggleCard() {
+    const open = card.classList.toggle('open');
+    card.setAttribute('aria-expanded', String(open));
+  }
+
+  card.addEventListener('click', toggleCard);
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCard(); }
+  });
+});

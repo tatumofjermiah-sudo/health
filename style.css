@@ -474,6 +474,7 @@ strong { color: inherit; }
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  cursor: pointer;
   transition: border-color var(--t) var(--ease), background var(--t) var(--ease);
 }
 .disease-card:hover {
@@ -493,6 +494,63 @@ strong { color: inherit; }
   font-weight: 500;
   color: var(--text);
   line-height: 1.4;
+}
+
+/* Expandable detail paragraph — hidden until card is `.open` */
+.disease-detail {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-top: 0.25rem;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.42s var(--ease), opacity 0.38s var(--ease), margin-top 0.25s var(--ease);
+}
+.disease-card.open .disease-detail {
+  max-height: 12rem;
+  opacity: 1;
+  margin-top: 0.65rem;
+}
+/* Plus/minus indicator on open cards */
+.disease-card.open {
+  border-color: rgba(0, 232, 122, 0.30);
+  background: rgba(5, 20, 40, 0.95);
+}
+.disease-card::after {
+  content: '＋';
+  font-size: 0.85rem;
+  color: var(--faint);
+  align-self: flex-end;
+  margin-top: auto;
+  transition: transform 0.28s var(--ease), color 0.2s var(--ease);
+}
+.disease-card.open::after {
+  content: '－';
+  color: var(--green);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KNOWLEDGE WEB NAVIGATOR
+   ═══════════════════════════════════════════════════════════════ */
+.web-nav-section {
+  position: relative;
+  z-index: 1;
+  padding: 4rem 0 2rem;
+  text-align: center;
+}
+.web-hint {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0.5rem auto 1.5rem;
+  opacity: 0.80;
+}
+#web-canvas {
+  display: block;
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  cursor: default;
 }
 
 /* ═══════════════════════════════════════════════════════════════
