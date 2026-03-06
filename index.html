@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Cosmic Body — A New Society Health Codex. The teachings of Dr. Sebi and Yahki Awakened through a mythical cold-space lens. Your body is a universe.">
+  <title>The Cosmic Body — A New Society Health Codex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Three.js Background Canvas -->
+  <canvas id="bg"></canvas>
+
+  <!-- Custom cursor dot -->
+  <div id="cursor-dot" aria-hidden="true"></div>
+  <!-- Custom cursor ring (lags behind with lerp) -->
+  <div id="cursor-ring-el" aria-hidden="true"></div>
+
+  <!-- ═══ NAVIGATION ═══ -->
+  <nav id="navbar">
+    <div class="nav-brand">New Society Health</div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#truth">Core Teaching</a></li>
+      <li><a href="#electric">Dr. Sebi</a></li>
+      <li><a href="#yahki">Yahki Awakened</a></li>
+      <li><a href="#lymph">Lymphatic</a></li>
+      <li><a href="#healing">Healing Path</a></li>
+      <li><a href="#foods">Electric Foods</a></li>
+    </ul>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section id="hero">
+    <div class="hero-content">
+      <div class="hero-tag">A New Society Health Guide</div>
+      <h1 class="hero-title">
+        The Body Is<br>
+        <span class="glow-text">Always On Your Side</span>
+      </h1>
+      <p class="hero-quote">
+        "Mucus is not your enemy. Mucus is your body trying to save your life.
+        You are the one who forced it to produce more than it can clear."
+        <em>— Yahki Awakened</em>
+      </p>
+      <a href="#truth" class="cta-btn">Begin the Journey ↓</a>
+
+      <!-- Animated stats strip -->
+      <div class="stats-strip">
+        <div class="stat-item">
+          <span class="stat-num" data-count="37" data-suffix="T+">37T+</span>
+          <span class="stat-label">Cells in Your Body</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-count="9" data-suffix="">9</span>
+          <span class="stat-label">Body Systems</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-count="1" data-suffix="">1</span>
+          <span class="stat-label">Root Cause</span>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator" aria-hidden="true">
+      <div class="scroll-dot"></div>
+    </div>
+  </section>
+
+  <!-- ═══ KNOWLEDGE WEB NAVIGATOR ═══ -->
+  <section id="web-nav" class="web-nav-section reveal">
+    <div class="container">
+      <div class="section-tag">Explore the Guide</div>
+      <p class="web-hint">Tap any node to jump to that section of the guide</p>
+    </div>
+    <canvas id="web-canvas" aria-label="Interactive knowledge web — tap a topic node to navigate to that section"></canvas>
+  </section>
+
+  <!-- ═══ CORE TEACHING: MUCUS IS THE SAVIOR ═══ -->
+  <section id="truth" class="section reveal">
+    <div class="container">
+      <div class="section-tag">Yahki Awakened's Core Teaching</div>
+      <h2 class="section-title">Mucus Is the <span class="highlight">Savior</span></h2>
+
+      <div class="truth-grid">
+        <div class="truth-card savior card-3d">
+          <div class="card-icon">🛡️</div>
+          <h3>Mucus Is Protecting You</h3>
+          <p>Every time acid enters the body, it produces mucus as an intelligent defense. Mucus coats and insulates tissues from acid damage. Without it, acid would eat through tissue the way it eats through metal.</p>
+          <p class="card-emphasis">Mucus is the body working <strong>for</strong> you, not against you.</p>
+        </div>
+
+        <div class="truth-center" aria-hidden="true">
+          <div class="center-orb">
+            <div class="orb-ring"></div>
+          </div>
+          <p class="center-quote">"The body never betrays you. It only responds to what you give it."</p>
+        </div>
+
+        <div class="truth-card problem card-3d">
+          <div class="card-icon">⚠️</div>
+          <h3>We Cause the Overload</h3>
+          <p>The crisis begins when we <strong>never stop putting acid in</strong>. Three acid-forming meals a day. Year after year. Generation after generation. The body keeps producing protective mucus, but without relief, it piles up, hardens, and calcifies.</p>
+          <p class="card-emphasis"><strong>That overload</strong> — not the mucus itself — is what we call disease.</p>
+        </div>
+      </div>
+
+      <div class="responsibility-block">
+        <h3>"You are not a victim of your body.<br><span class="highlight">Your body is a victim of your choices.</span>"</h3>
+        <p>This is not blame — it is power. If choices created the problem, choices can heal it. Wherever you have the ability to make a different choice, make it. The body will respond.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DISEASE MAP ═══ -->
+  <section id="disease-map" class="section reveal dark-section">
+    <div class="container">
+      <div class="section-tag">The Map of Disease</div>
+      <h2 class="section-title">Where the Overload <span class="highlight">Settles</span></h2>
+      <p class="section-intro">Every named disease is not a separate, unrelated condition. Every one of them is our own mucus overload in a different location, produced by the same root cause of our own making.</p>
+
+      <div class="disease-grid">
+        <div class="disease-card card-3d">
+          <div class="disease-location">Bronchial Tubes &amp; Lungs</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">Asthma · Bronchitis · COPD</div>
+          <p class="disease-detail">Excess mucus piles up in and around the airways. It narrows the bronchial passages, traps bacteria, and triggers chronic inflammation — the body's attempt to signal what it cannot clear.</p>
+        </div>
+        <div class="disease-card card-3d">
+          <div class="disease-location">Pancreatic Ducts</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">Type 2 Diabetes</div>
+          <p class="disease-detail">Mucus blockages in the pancreatic ducts impair insulin function and disrupt digestive enzyme release, leading to chronic blood-sugar dysregulation that the body cannot self-correct.</p>
+        </div>
+        <div class="disease-card card-3d">
+          <div class="disease-location">Arterial Walls</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">Hypertension · Heart Disease · Atherosclerosis</div>
+          <p class="disease-detail">Acid-triggered inflammation hardens and narrows the arterial walls, forcing the heart to push harder against increasing resistance — what we call high blood pressure and ultimately heart disease.</p>
+        </div>
+        <div class="disease-card card-3d">
+          <div class="disease-location">Joints &amp; Connective Tissue</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">Arthritis · Fibromyalgia</div>
+          <p class="disease-detail">Crystallized acid deposits and mucus accumulation in the joint space trigger immune attacks on surrounding tissue — producing the burning stiffness and systemic pain we label as arthritis or fibromyalgia.</p>
+        </div>
+        <div class="disease-card card-3d">
+          <div class="disease-location">Brain &amp; Nervous Tissue</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">MS · Parkinson's · Dementia · Depression</div>
+          <p class="disease-detail">The brain relies on clean cerebrospinal fluid and an unobstructed lymphatic drain. Acid and mucus congestion in this fluid disrupt electrical nerve signals — producing the neurological symptoms we name as separate diseases.</p>
+        </div>
+        <div class="disease-card card-3d">
+          <div class="disease-location">Skin</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">Eczema · Psoriasis · Acne · Rosacea</div>
+          <p class="disease-detail">Skin is the body's largest elimination organ. When the kidneys, liver, and lymph are overloaded, the skin becomes a backup exit route — pushing accumulated toxins and mucus out through the pores.</p>
+        </div>
+        <div class="disease-card card-3d">
+          <div class="disease-location">Kidneys</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">Kidney Stones · Kidney Disease</div>
+          <p class="disease-detail">Acid overload forces the kidneys to constantly buffer blood pH. Over time, mineral precipitation and mucus calcification in the tubules form stones and progressively damage the kidneys' filtration capacity.</p>
+        </div>
+        <div class="disease-card card-3d">
+          <div class="disease-location">Uterus &amp; Reproductive Organs</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">Fibroids · Cysts · Endometriosis · Infertility</div>
+          <p class="disease-detail">Hormone-disrupting acid foods and mucus congestion in reproductive tissue create ideal conditions for abnormal cell growth — resulting in fibroids, cysts, and the hormonal imbalance behind infertility.</p>
+        </div>
+        <div class="disease-card card-3d">
+          <div class="disease-location">Liver &amp; Gallbladder</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">Gallstones · Fatty Liver · Cirrhosis</div>
+          <p class="disease-detail">Accumulated fat and mucus overwhelm the liver's detox pathways. The gallbladder concentrates bile that becomes too thick to flow freely — hardening into stones and eventually scarring the liver itself.</p>
+        </div>
+        <div class="disease-card card-3d">
+          <div class="disease-location">Thyroid</div>
+          <div class="disease-arrow">→</div>
+          <div class="disease-name">Hypothyroidism · Goiter · Hashimoto's</div>
+          <p class="disease-detail">The thyroid requires iodine and sea minerals to produce its hormones. Mucus congestion around thyroid tissue and mineral depletion from an acid diet directly suppress its output — slowing every system in the body.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DR. SEBI FRAMEWORK ═══ -->
+  <section id="electric" class="section reveal">
+    <div class="container">
+      <div class="section-tag">Dr. Sebi's Framework</div>
+      <h2 class="section-title">The <span class="highlight">Electric</span> Body</h2>
+      <p class="section-intro">Dr. Sebi taught that the human body is fundamentally electric — a living, carbon-based organism that runs on bioelectric energy. The body is not a chemical machine — it is an electric one.</p>
+
+      <div class="cards-grid">
+        <div class="info-card card-3d">
+          <div class="card-icon-large">⚡</div>
+          <h3>The Electric Organism</h3>
+          <p>Every cell produces and operates on bioelectric energy. The heart beats electrically. The brain communicates through electrical impulses. Nerves fire electrochemically. When you put dead, processed, acid-forming material into an electric system, you disrupt the current — and that disruption is sickness.</p>
+          <div class="card-principle">Electric food for an electric body.</div>
+        </div>
+
+        <div class="info-card card-3d">
+          <div class="card-icon-large">🔬</div>
+          <h3>The Cell: Origin of All Disease</h3>
+          <p>The human body has ~37 trillion cells. Each needs minerals, water, oxygen, and electrical charge. When cells are bathed in acid, clogged with mucus overload, or starved of minerals, they malfunction. A malfunctioning cell is a sick cell. Enough sick cells create a sick organ. A sick organ creates a sick person.</p>
+          <div class="card-principle">Disease is cellular malfunction accumulated over time.</div>
+        </div>
+
+        <div class="info-card card-3d">
+          <div class="card-icon-large">🌿</div>
+          <h3>African Bio-Mineral Balance</h3>
+          <p>Dr. Sebi's protocol: herbs and compounds formulated to revitalize the electric body, remove accumulated mucus overload, replenish depleted minerals, and restore organ function. Key plants: <strong>sea moss, bladderwrack, burdock root, sarsaparilla, chaparral, elderberry</strong>.</p>
+          <div class="card-principle">Healing herbs drawn from African, Caribbean, and Indigenous traditions.</div>
+        </div>
+
+        <div class="info-card card-3d">
+          <div class="card-icon-large">💧</div>
+          <h3>Fasting as Medicine</h3>
+          <p>When you stop eating, you give the digestive system rest, allow the body to redirect energy toward healing, trigger autophagy (cellular self-cleaning), and accelerate the removal of built-up mucus and toxins. The body heals what it has been too busy to address.</p>
+          <div class="card-principle">Natural spring water only — contains minerals, not chemicals.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ACID vs ALKALINE ═══ -->
+  <section id="acid" class="section reveal dark-section">
+    <div class="container">
+      <div class="section-tag">The Foundation</div>
+      <h2 class="section-title">Acid vs. <span class="highlight">Alkaline</span></h2>
+      <p class="section-intro">Blood must stay between pH 7.35–7.45 to sustain life. The body will do anything to maintain this narrow range — including producing excess mucus buffers when flooded with acid-forming substances.</p>
+
+      <div class="acid-alkaline-container">
+        <div class="acid-side">
+          <h3 class="side-title acid-title">⚠️ Acid-Forming — Forces Mucus Production</h3>
+          <ul class="food-list acid">
+            <li>All animal flesh (meat, chicken, fish)</li>
+            <li>Dairy (milk, cheese, butter, yogurt)</li>
+            <li>Refined sugar &amp; high-fructose corn syrup</li>
+            <li>White flour and processed grains</li>
+            <li>Alcohol and caffeine</li>
+            <li>Pharmaceutical drugs</li>
+            <li>Artificial additives &amp; preservatives</li>
+            <li>Hybrid fruits (seedless grapes, carrots)</li>
+          </ul>
+          <div class="side-result acid-result">Creates inflammation, forces mucus overload, depletes minerals, disrupts bioelectric current.</div>
+        </div>
+
+        <div class="ph-scale">
+          <div class="ph-label">pH 7.35 – 7.45</div>
+          <div class="ph-bar">
+            <div class="ph-marker">
+              <span>Blood Must<br>Stay Here</span>
+            </div>
+          </div>
+          <div class="ph-note">The body will sacrifice everything to hold this range.</div>
+        </div>
+
+        <div class="alkaline-side">
+          <h3 class="side-title alkaline-title">✅ Alkaline / Electric — Stops Mucus Overload</h3>
+          <ul class="food-list alkaline">
+            <li>Dark leafy greens (kale, dandelion, callaloo)</li>
+            <li>Wild-grown grains (teff, amaranth, quinoa)</li>
+            <li>Natural fruits (mango, berries, tamarind)</li>
+            <li>Sea vegetables and minerals</li>
+            <li>Natural sweeteners (agave, date sugar)</li>
+            <li>Cold-pressed oils (olive, coconut, hemp)</li>
+            <li>Natural spring water</li>
+            <li>Herbs and medicinal roots</li>
+          </ul>
+          <div class="side-result alkaline-result">Feeds the cells, reduces inflammation, stops forcing mucus overload, restores electrical charge.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ YAHKI AWAKENED TEACHINGS ═══ -->
+  <section id="yahki" class="section reveal">
+    <div class="container">
+      <div class="section-tag">Yahki Awakened</div>
+      <h2 class="section-title">Teachings for a <span class="highlight">New Society</span></h2>
+
+      <div class="yahki-grid">
+        <div class="yahki-card card-3d">
+          <span class="yahki-num">01</span>
+          <h3>Root Causes, Not Symptoms</h3>
+          <p>Western medicine treats symptoms, not causes. Pharmaceuticals suppress symptoms while the underlying condition continues or worsens. True healing requires identifying and eliminating the root cause — most often, what we eat, drink, breathe, and think.</p>
+        </div>
+
+        <div class="yahki-card card-3d">
+          <span class="yahki-num">02</span>
+          <h3>You Are the Environment You Live In</h3>
+          <p>Your body is an environment — and every environment responds to its inputs. A garden grows what you plant. A river flows clear or cloudy based on what enters it. You are not sick because of a broken body. You are living in a body damaged by what you put into it.</p>
+        </div>
+
+        <div class="yahki-card card-3d">
+          <span class="yahki-num">03</span>
+          <h3>The Lymphatic System</h3>
+          <p>The lymphatic system has no pump — it moves only through exercise, breathing, and body movement. When it becomes congested, cellular waste backs up into organs and tissues. This congestion is the foundation of virtually every named chronic disease.</p>
+        </div>
+
+        <div class="yahki-card card-3d">
+          <span class="yahki-num">04</span>
+          <h3>Parasites — The Hidden Epidemic</h3>
+          <p>Parasitic infections are far more common than acknowledged. A mucus-overloaded body is their ideal habitat. Cleaning out mucus overload and parasites go hand in hand. Natural cleansers: black walnut hull, wormwood, cloves, neem, mimosa pudica seed, pumpkin seed.</p>
+        </div>
+
+        <div class="yahki-card card-3d">
+          <span class="yahki-num">05</span>
+          <h3>Melanin &amp; Ancestral Health</h3>
+          <p>Melanin is biologically significant — an absorber of electromagnetic radiation with antioxidant properties. People of African descent have specific nutritional and environmental considerations not addressed by conventional Western medicine, which was largely developed around European bodies.</p>
+        </div>
+
+        <div class="yahki-card card-3d">
+          <span class="yahki-num">06</span>
+          <h3>Reclaiming Indigenous Knowledge</h3>
+          <p>Herbs, roots, and plant medicines used for thousands of years by African, Caribbean, and Indigenous peoples represent deep and valid medical knowledge. The goal: reclaim what was taken and integrate it into a whole-person approach to health that Western medicine cannot provide.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ LYMPHATIC SYSTEM ═══ -->
+  <section id="lymph" class="section reveal dark-section">
+    <div class="container">
+      <div class="section-tag">The System Western Medicine Ignores</div>
+      <h2 class="section-title">The <span class="highlight">Lymphatic</span> System</h2>
+      <p class="section-intro">Yahki Awakened places the lymphatic system at the center of all chronic disease — it is the body's master sewage network, and without it, nothing else can fully heal.</p>
+
+      <div class="lymph-layout">
+        <div class="lymph-info">
+          <div class="lymph-fact card-3d">
+            <h3>🚫 No Pump</h3>
+            <p>Unlike blood, lymph has no heart to drive it. It moves <strong>only</strong> through muscle contractions, deep breathing, and body movement. A sedentary person sitting still all day has a lymphatic system barely moving. Waste accumulates. Nodes congest. Tissues inflame. Immunity collapses.</p>
+          </div>
+
+          <div class="lymph-fact card-3d">
+            <h3>⚠️ Signs of Lymphatic Congestion</h3>
+            <ul>
+              <li>Chronic fatigue that sleep doesn't fix</li>
+              <li>Swollen, tender lymph nodes</li>
+              <li>Brain fog and poor memory</li>
+              <li>Puffiness and fluid retention</li>
+              <li>Skin conditions (acne, eczema, psoriasis)</li>
+              <li>Recurring sore throats and infections</li>
+              <li>Cellulite (trapped lymphatic waste)</li>
+              <li>Chronic pain without clear cause</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="lymph-movers card-3d">
+          <h3>How to Move Your Lymph</h3>
+          <div class="mover-list">
+            <div class="mover-item">
+              <span class="mover-icon">🏃</span>
+              <div><strong>Rebounding</strong> — Most powerful lymphatic mover. The up-down motion on a mini-trampoline opens and closes lymph valves with every bounce.</div>
+            </div>
+            <div class="mover-item">
+              <span class="mover-icon">🌬️</span>
+              <div><strong>Deep Diaphragmatic Breathing</strong> — Slow, deep breaths that expand the entire torso create respiratory pressure that drives lymph through its vessels.</div>
+            </div>
+            <div class="mover-item">
+              <span class="mover-icon">🖐️</span>
+              <div><strong>Dry Skin Brushing</strong> — Brushing the skin in strokes toward the heart before bathing stimulates lymph flow directly beneath the skin surface.</div>
+            </div>
+            <div class="mover-item">
+              <span class="mover-icon">🌿</span>
+              <div><strong>Herbal Lymph Movers</strong> — Red clover, cleavers, calendula, yellow dock, poke root, ocotillo, stillingia.</div>
+            </div>
+            <div class="mover-item">
+              <span class="mover-icon">🍃</span>
+              <div><strong>Eliminate Top Mucus Producers</strong> — Dairy and wheat create the most mucus overload and directly congest the lymphatic system.</div>
+            </div>
+            <div class="mover-item">
+              <span class="mover-icon">🌙</span>
+              <div><strong>Fasting</strong> — Allows the lymphatic system to finally catch up on clearing backed-up waste it never had time to clear.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cancer-block">
+        <h3>Cancer — A Localized Lymphatic Failure</h3>
+        <p>When lymph cannot clear waste from a specific area — because the nearest lymph nodes are overwhelmed and vessels are blocked — cellular waste builds up, cells mutate trying to survive in a toxic environment, and a tumor forms. The tumor is not a random biological error. <strong>It is the body's last-resort attempt to wall off a toxic waste dump it cannot clear.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ HEALING PATH ═══ -->
+  <section id="healing" class="section reveal">
+    <div class="container">
+      <div class="section-tag">The Path Forward</div>
+      <h2 class="section-title">The <span class="highlight">Healing</span> Path</h2>
+      <p class="section-intro">Healing is not adding a drug to suppress a symptom. Healing is reversing the conditions that caused the problem. If we created the overload, we can stop creating it — and the body will clear itself.</p>
+
+      <div class="healing-steps">
+        <div class="step card-3d">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h3>Stop the Assault</h3>
+            <p>Remove acid-forming foods — dairy, meat, processed foods, white sugar, white flour. Stop consuming tap water loaded with chlorine, fluoride, and heavy metals. Begin reducing pharmaceutical dependency with professional guidance. When the acid stops, so does the forced mucus production.</p>
+          </div>
+        </div>
+
+        <div class="step card-3d">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h3>Hydrate with Living Water</h3>
+            <p>Switch to natural spring water — water that still contains its natural minerals and has not been chemically treated. Proper hydration is the vehicle through which the lymphatic system moves waste. Without it, nothing flows. Aim for one gallon per day.</p>
+          </div>
+        </div>
+
+        <div class="step card-3d">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h3>Feed the Electric Body</h3>
+            <p>Transition to alkaline, mineral-rich, plant-based whole foods. Dark leafy greens, wild-grown grains, natural fruits, sea vegetables, and cold-pressed oils. These foods feed the cells at the electrical level and stop forcing the body into a permanent state of mucus production.</p>
+          </div>
+        </div>
+
+        <div class="step card-3d">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <h3>Move the Lymph Daily</h3>
+            <p>Rebound, walk briskly, swim, breathe deeply, dry brush. The lymph has no pump — you are its pump. Daily movement is not optional for healing; it is the mechanism by which decades of accumulated waste actually gets collected, filtered, and expelled.</p>
+          </div>
+        </div>
+
+        <div class="step card-3d">
+          <div class="step-num">05</div>
+          <div class="step-content">
+            <h3>Fast and Rest</h3>
+            <p>Fasting redirects energy from digestion to deep healing. Autophagy (cellular self-cleaning) accelerates dramatically. The lymphatic system gets a window to finally clear what accumulated over years. Start with intermittent fasting and build under guidance.</p>
+          </div>
+        </div>
+
+        <div class="step card-3d">
+          <div class="step-num">06</div>
+          <div class="step-content">
+            <h3>Cleanse and Rebuild with Herbs</h3>
+            <p>Dr. Sebi's African Bio-Mineral Balance herbs accelerate what lifestyle change begins: sea moss, bladderwrack, burdock root, sarsaparilla, chaparral, elderberry. These are not replacements for changing what you eat — they are the accelerator pedal once you've changed direction.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ELECTRIC FOOD LIST ═══ -->
+  <section id="foods" class="section reveal dark-section">
+    <div class="container">
+      <div class="section-tag">Dr. Sebi Approved</div>
+      <h2 class="section-title">Electric <span class="highlight">Foods</span></h2>
+      <p class="section-intro">These are foods that are alive, mineral-rich, and alkaline — foods that generate and carry electrical charge rather than depleting it. Eating these stops the acid assault that forced mucus overload to begin.</p>
+
+      <div class="food-categories">
+        <div class="food-cat card-3d">
+          <h3>🥬 Vegetables</h3>
+          <ul>
+            <li>Amaranth greens (callaloo)</li>
+            <li>Avocado</li>
+            <li>Bell peppers</li>
+            <li>Chayote (Mexican squash)</li>
+            <li>Cucumber</li>
+            <li>Dandelion greens</li>
+            <li>Kale</li>
+            <li>Lettuce (except iceberg)</li>
+            <li>Mushrooms (except shiitake)</li>
+            <li>Nopales (cactus)</li>
+            <li>Olives</li>
+            <li>Onions</li>
+            <li>Squash</li>
+            <li>Tomato (cherry &amp; plum only)</li>
+            <li>Turnip greens</li>
+            <li>Watercress</li>
+            <li>Zucchini</li>
+          </ul>
+        </div>
+
+        <div class="food-cat card-3d">
+          <h3>🥭 Fruits</h3>
+          <ul>
+            <li>Apples</li>
+            <li>Berries (all varieties)</li>
+            <li>Cantaloupe</li>
+            <li>Cherries</li>
+            <li>Coconut</li>
+            <li>Currants</li>
+            <li>Dates</li>
+            <li>Elderberries</li>
+            <li>Figs</li>
+            <li>Grapes (seeded)</li>
+            <li>Limes (key limes preferred)</li>
+            <li>Mango</li>
+            <li>Melons (seeded)</li>
+            <li>Orange (Seville)</li>
+            <li>Papaya</li>
+            <li>Peaches</li>
+            <li>Pears</li>
+            <li>Plums</li>
+            <li>Tamarind</li>
+          </ul>
+        </div>
+
+        <div class="food-cat card-3d">
+          <h3>🌾 Grains</h3>
+          <ul>
+            <li>Amaranth</li>
+            <li>Black rice</li>
+            <li>Kamut</li>
+            <li>Quinoa</li>
+            <li>Rye</li>
+            <li>Spelt</li>
+            <li>Teff</li>
+            <li>Wild rice</li>
+          </ul>
+          <h3 class="sub-heading">🌰 Nuts &amp; Seeds</h3>
+          <ul>
+            <li>Brazil nuts</li>
+            <li>Hemp seeds</li>
+            <li>Raw sesame seeds</li>
+            <li>Tahini butter</li>
+            <li>Walnuts</li>
+          </ul>
+        </div>
+
+        <div class="food-cat card-3d">
+          <h3>🌊 Sea Vegetables</h3>
+          <ul>
+            <li>Bladderwrack</li>
+            <li>Dulse</li>
+            <li>Irish sea moss</li>
+            <li>Kelp</li>
+            <li>Nori</li>
+            <li>Wakame</li>
+          </ul>
+          <h3 class="sub-heading">🫒 Cold-Pressed Oils</h3>
+          <ul>
+            <li>Avocado oil</li>
+            <li>Coconut oil (raw)</li>
+            <li>Grapeseed oil</li>
+            <li>Hemp oil</li>
+            <li>Olive oil</li>
+            <li>Sesame oil</li>
+          </ul>
+          <h3 class="sub-heading">🍬 Natural Sweeteners</h3>
+          <ul>
+            <li>Agave nectar (raw)</li>
+            <li>Date sugar</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CLOSING ═══ -->
+  <section id="closing" class="section reveal closing-section">
+    <div class="container">
+      <div class="closing-inner">
+        <h2>The Body Is Always On Your Side</h2>
+        <p class="closing-p">The mucus was always the savior. The overload was always our doing. And that means the healing is always in our hands.</p>
+        <p class="closing-p">When you stop feeding the body acid. When you stop flooding it with mucus-overloading dairy, processed food, and dead animal flesh. When you move the lymphatic system daily. When you fast and provide the minerals it needs to rebuild — the body heals. Not because of a drug or a procedure. Because the environment changed, and the body was always ready to heal the moment the assault stopped.</p>
+        <blockquote class="closing-quote">
+          "A new society is not built on hospitals. It is built on healthy people who know the truth about their own bodies."
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">New Society Health Guide</div>
+        <p class="footer-inspired">Inspired by the teachings of Dr. Sebi (Alfredo Darrington Bowman, 1933–2016) and Yahki Awakened</p>
+        <div class="footer-refs">
+          <strong>Further Study:</strong>
+          Dr. Sebi — his listed approved foods and bio-mineral compounds ·
+          Yahki Awakened — books, YouTube channel, and courses on lymphatic health and natural healing ·
+          Queen Afua — <em>Sacred Woman</em> ·
+          Dick Gregory — diet and the Black community
+        </div>
+        <p class="disclaimer">This website is for educational and informational purposes only. It is not intended to diagnose, treat, cure, or prevent any disease. Always work with a knowledgeable health practitioner when addressing serious health conditions.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
