@@ -5,6 +5,8 @@
 /* ── Constants ──────────────────────────────────────────────────── */
 const MIN_NODE_SCALE   = 0.01;  // prevent scale collapsing to 0
 const MIN_SCROLL_HEIGHT = 1;    // floor for division; avoids ÷0 on short pages
+const BURST_COUNT    = 50;      // particles per click explosion
+const BURST_LIFETIME = 55;      // frames until burst fully fades
 
 /* ──────────────────────────────────────────────────────────────
    THREE.JS SCENE SETUP
@@ -43,7 +45,7 @@ scene.add(goldLight);
 /* ──────────────────────────────────────────────────────────────
    PARTICLE FIELD  (background cellular "haze")
    ────────────────────────────────────────────────────────────── */
-const PARTICLE_COUNT = 2800;
+const PARTICLE_COUNT = 6000;
 const pGeo = new THREE.BufferGeometry();
 const pPos    = new Float32Array(PARTICLE_COUNT * 3);
 const pColors = new Float32Array(PARTICLE_COUNT * 3);
@@ -81,7 +83,7 @@ scene.add(particles);
 /* ──────────────────────────────────────────────────────────────
    LYMPHATIC NETWORK  (nodes + connecting lines)
    ────────────────────────────────────────────────────────────── */
-const NODE_COUNT = 55;
+const NODE_COUNT = 90;
 const nodeVecs = [];
 
 for (let i = 0; i < NODE_COUNT; i++) {
@@ -172,6 +174,129 @@ const orbData = ORB_SPECS.map(({ pos, color, r }) => {
 });
 
 /* ──────────────────────────────────────────────────────────────
+   DNA DOUBLE HELIX  (two intertwined tubes + rungs)
+   ────────────────────────────────────────────────────────────── */
+const DNA_STEPS  = 240;
+const dnaGroup   = new THREE.Group();
+
+for (let strand = 0; strand < 2; strand++) {
+  const pts = [];
+  for (let i = 0; i < DNA_STEPS; i++) {
+    const t      = (i / DNA_STEPS) * Math.PI * 10;
+    const offset = strand * Math.PI;
+    pts.push(new THREE.Vector3(
+      Math.cos(t + offset) * 1.8,
+      (i / DNA_STEPS) * 38 - 19,
+      Math.sin(t + offset) * 1.8,
+    ));
+  }
+  const curve   = new THREE.CatmullRomCurve3(pts);
+  const tubeGeo = new THREE.TubeGeometry(curve, 260, 0.048, 6, false);
+  const tubeMat = new THREE.MeshBasicMaterial({
+    color:       strand === 0 ? 0x00e87a : 0xf5a623,
+    transparent: true,
+    opacity:     0.58,
+  });
+  dnaGroup.add(new THREE.Mesh(tubeGeo, tubeMat));
+}
+
+// Rungs (cross-links between strands)
+const RUNG_COUNT = 30;
+for (let i = 0; i < RUNG_COUNT; i++) {
+  const frac    = i / RUNG_COUNT;
+  const t       = frac * Math.PI * 10;
+  const y       = frac * 38 - 19;
+  const rungGeo = new THREE.BufferGeometry();
+  rungGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+    Math.cos(t) * 1.8,            y, Math.sin(t) * 1.8,
+    Math.cos(t + Math.PI) * 1.8,  y, Math.sin(t + Math.PI) * 1.8,
+  ]), 3));
+  dnaGroup.add(new THREE.LineSegments(rungGeo, new THREE.LineBasicMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.16,
+  })));
+}
+
+dnaGroup.position.set(-15, 0, -10);
+scene.add(dnaGroup);
+
+/* ──────────────────────────────────────────────────────────────
+   WIREFRAME CELL SHAPES  (large structural background forms)
+   ────────────────────────────────────────────────────────────── */
+const cellIco = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(6, 1),
+  new THREE.MeshBasicMaterial({
+    color: 0x00e87a, wireframe: true, transparent: true, opacity: 0.038,
+  }),
+);
+cellIco.position.set(10, -2, -14);
+scene.add(cellIco);
+
+const cellOct = new THREE.Mesh(
+  new THREE.OctahedronGeometry(8, 2),
+  new THREE.MeshBasicMaterial({
+    color: 0xf5a623, wireframe: true, transparent: true, opacity: 0.025,
+  }),
+);
+cellOct.position.set(-12, 4, -18);
+scene.add(cellOct);
+
+/* ──────────────────────────────────────────────────────────────
+   CURSOR ORB  (glowing sphere that tracks the mouse in 3D)
+   ────────────────────────────────────────────────────────────── */
+const cursorOrb = new THREE.Mesh(
+  new THREE.SphereGeometry(0.22, 14, 14),
+  new THREE.MeshBasicMaterial({ color: 0x00e87a, transparent: true, opacity: 0.90 }),
+);
+scene.add(cursorOrb);
+
+const cursorRing = new THREE.Mesh(
+  new THREE.TorusGeometry(0.58, 0.020, 8, 32),
+  new THREE.MeshBasicMaterial({ color: 0x00e87a, transparent: true, opacity: 0.42 }),
+);
+scene.add(cursorRing);
+
+/* ──────────────────────────────────────────────────────────────
+   CLICK PARTICLE BURST
+   ────────────────────────────────────────────────────────────── */
+const clickBursts = [];
+
+window.addEventListener('click', e => {
+  // Map screen position to approximate 3D world coords (z ≈ 8)
+  const cx = (e.clientX / window.innerWidth  - 0.5) *  28;
+  const cy = -(e.clientY / window.innerHeight - 0.5) * 18;
+
+  const burstPos = new Float32Array(BURST_COUNT * 3);
+  const burstVel = [];
+
+  for (let i = 0; i < BURST_COUNT; i++) {
+    burstPos[i * 3]     = cx;
+    burstPos[i * 3 + 1] = cy;
+    burstPos[i * 3 + 2] = 8;
+    const theta = Math.random() * Math.PI * 2;
+    const phi   = Math.random() * Math.PI;
+    const speed = 0.12 + Math.random() * 0.28;
+    burstVel.push(new THREE.Vector3(
+      Math.sin(phi) * Math.cos(theta) * speed,
+      Math.sin(phi) * Math.sin(theta) * speed,
+      Math.cos(phi) * speed * 0.3,
+    ));
+  }
+
+  const bGeo = new THREE.BufferGeometry();
+  bGeo.setAttribute('position', new THREE.BufferAttribute(burstPos, 3));
+  const bMat = new THREE.PointsMaterial({
+    size:           0.17,
+    color:          Math.random() < 0.65 ? 0x00e87a : 0xf5a623,
+    transparent:    true,
+    opacity:        1.0,
+    sizeAttenuation: true,
+  });
+  const bPts = new THREE.Points(bGeo, bMat);
+  scene.add(bPts);
+  clickBursts.push({ pts: bPts, vel: burstVel, age: 0 });
+});
+
+/* ──────────────────────────────────────────────────────────────
    STATE
    ────────────────────────────────────────────────────────────── */
 const clock   = new THREE.Clock();
@@ -239,10 +364,51 @@ function animate() {
   goldLight.position.y  = Math.sin(t * 0.32) *   7;
 
   /* Camera: mouse parallax + scroll depth */
-  camera.position.x += (mouseX * 2.5 - camera.position.x) * 0.035;
-  camera.position.y += (-mouseY * 1.8 - camera.position.y) * 0.035;
+  camera.position.x += (mouseX * 4.5 - camera.position.x) * 0.040;
+  camera.position.y += (-mouseY * 3.2 - camera.position.y) * 0.040;
   camera.position.z  = 22 - scrollPct * 9;
   camera.lookAt(scene.position);
+
+  /* DNA helix — slow continuous rotation */
+  dnaGroup.rotation.y = t * 0.065;
+
+  /* Wireframe cells — lazy drift rotation */
+  cellIco.rotation.x = t * 0.018;
+  cellIco.rotation.y = t * 0.030;
+  cellOct.rotation.x = t * 0.013;
+  cellOct.rotation.z = t * 0.021;
+
+  /* Cursor orb — lag-follows the mouse */
+  cursorOrb.position.x += (mouseX * 14 - cursorOrb.position.x) * 0.14;
+  cursorOrb.position.y += (-mouseY * 9  - cursorOrb.position.y) * 0.14;
+  cursorOrb.position.z  = 10;
+  cursorOrb.scale.setScalar(1 + Math.sin(t * 4.5) * 0.18);
+
+  cursorRing.position.copy(cursorOrb.position);
+  cursorRing.rotation.x = t * 1.2;
+  cursorRing.rotation.y = t * 0.8;
+  cursorRing.material.opacity = 0.22 + Math.abs(Math.sin(t * 3)) * 0.20;
+
+  /* Click burst particles — advance & fade */
+  for (let b = clickBursts.length - 1; b >= 0; b--) {
+    const burst = clickBursts[b];
+    burst.age++;
+    const posAttr = burst.pts.geometry.getAttribute('position');
+    for (let i = 0; i < BURST_COUNT; i++) {
+      posAttr.array[i * 3]     += burst.vel[i].x;
+      posAttr.array[i * 3 + 1] += burst.vel[i].y;
+      posAttr.array[i * 3 + 2] += burst.vel[i].z;
+      burst.vel[i].multiplyScalar(0.96); // dampen over time
+    }
+    posAttr.needsUpdate = true;
+    burst.pts.material.opacity = Math.max(0, 1 - burst.age / BURST_LIFETIME);
+    if (burst.age >= BURST_LIFETIME) {
+      scene.remove(burst.pts);
+      burst.pts.geometry.dispose();
+      burst.pts.material.dispose();
+      clickBursts.splice(b, 1);
+    }
+  }
 
   renderer.render(scene, camera);
 }
@@ -276,7 +442,7 @@ document.querySelectorAll('.card-3d').forEach(card => {
     const x = (e.clientX - r.left)  / r.width  - 0.5;
     const y = (e.clientY - r.top)   / r.height - 0.5;
     card.style.transform =
-      `perspective(640px) rotateX(${-y * 9}deg) rotateY(${x * 9}deg) translateZ(10px)`;
+      `perspective(640px) rotateX(${-y * 20}deg) rotateY(${x * 20}deg) translateZ(18px)`;
   });
 
   card.addEventListener('mouseleave', () => {
@@ -305,5 +471,21 @@ if (navToggle && navLinks) {
       navToggle.setAttribute('aria-expanded', 'false');
       navToggle.textContent = '☰';
     });
+  });
+}
+
+/* ──────────────────────────────────────────────────────────────
+   CUSTOM CURSOR DOT  (neon glow that follows the pointer)
+   ────────────────────────────────────────────────────────────── */
+const cursorDot = document.getElementById('cursor-dot');
+if (cursorDot) {
+  window.addEventListener('mousemove', e => {
+    cursorDot.style.left = e.clientX + 'px';
+    cursorDot.style.top  = e.clientY + 'px';
+  });
+
+  document.querySelectorAll('a, button, .card-3d').forEach(el => {
+    el.addEventListener('mouseenter', () => cursorDot.classList.add('expanded'));
+    el.addEventListener('mouseleave', () => cursorDot.classList.remove('expanded'));
   });
 }
