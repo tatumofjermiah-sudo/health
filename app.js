@@ -3,10 +3,16 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Constants ──────────────────────────────────────────────────── */
-const MIN_NODE_SCALE   = 0.01;  // prevent scale collapsing to 0
-const MIN_SCROLL_HEIGHT = 1;    // floor for division; avoids ÷0 on short pages
-const BURST_COUNT    = 50;      // particles per click explosion
-const BURST_LIFETIME = 55;      // frames until burst fully fades
+const MIN_NODE_SCALE          = 0.01;  // prevent scale collapsing to 0
+const MIN_SCROLL_HEIGHT        = 1;     // floor for division; avoids ÷0 on short pages
+const BURST_COUNT              = 50;    // particles per click explosion
+const BURST_LIFETIME           = 55;    // frames until burst fully fades
+const EDGE_STRIDE              = 6;     // floats per edge in lineArr (x1,y1,z1,x2,y2,z2)
+const MOUSE_PARALLAX_X         = 4.5;  // camera parallax range on X axis
+const MOUSE_PARALLAX_Y         = 3.2;  // camera parallax range on Y axis
+const CAMERA_LERP_FACTOR       = 0.040; // camera position smoothing (higher = snappier)
+const RING_LAG_FACTOR          = 0.10;  // cursor ring lerp speed (0 = frozen, 1 = instant)
+const COUNTER_ANIMATION_STEPS  = 55;    // number of increments for the hero stat counters
 
 /* ──────────────────────────────────────────────────────────────
    THREE.JS SCENE SETUP
@@ -120,6 +126,15 @@ const lineMat = new THREE.LineBasicMaterial({
 });
 const networkLines = new THREE.LineSegments(lineGeo, lineMat);
 scene.add(networkLines);
+
+/* Build edge list so signal pulses can travel along them */
+const edges = [];
+for (let i = 0; i + EDGE_STRIDE - 1 < lineArr.length; i += EDGE_STRIDE) {
+  edges.push({
+    start: new THREE.Vector3(lineArr[i],   lineArr[i+1], lineArr[i+2]),
+    end:   new THREE.Vector3(lineArr[i+3], lineArr[i+4], lineArr[i+5]),
+  });
+}
 
 // Small spheres at each node
 const nodeMeshData = nodeVecs.map((pos) => {
@@ -256,6 +271,57 @@ const cursorRing = new THREE.Mesh(
 scene.add(cursorRing);
 
 /* ──────────────────────────────────────────────────────────────
+   SIGNAL PULSES  (dots that travel along lymph network edges)
+   ────────────────────────────────────────────────────────────── */
+const PULSE_COUNT = 24;
+const pulseData   = Array.from({ length: PULSE_COUNT }, () => {
+  const isGold = Math.random() > 0.65;
+  const mesh   = new THREE.Mesh(
+    new THREE.SphereGeometry(0.055, 5, 5),
+    new THREE.MeshBasicMaterial({
+      color:       isGold ? 0xf5a623 : 0x00e87a,
+      transparent: true,
+      opacity:     0,
+    }),
+  );
+  scene.add(mesh);
+  return {
+    mesh,
+    edgeIdx: Math.floor(Math.random() * Math.max(edges.length, 1)),
+    t:       Math.random(),
+    speed:   0.18 + Math.random() * 0.38,
+  };
+});
+
+/* ──────────────────────────────────────────────────────────────
+   SHOOTING STARS  (fast streak lines that reset position)
+   ────────────────────────────────────────────────────────────── */
+const STAR_COUNT = 7;
+const starData   = Array.from({ length: STAR_COUNT }, () => {
+  const geo  = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0,0,0, 2.2,0,0]), 3));
+  const mat  = new THREE.LineBasicMaterial({
+    color:       Math.random() > 0.5 ? 0x00e87a : 0xf5a623,
+    transparent: true,
+    opacity:     0,
+  });
+  const line = new THREE.Line(geo, mat);
+  const rawSpd = new THREE.Vector3(
+    (Math.random() - 0.5) * 1.4,
+    (Math.random() - 0.5) * 1.4,
+    (Math.random() - 0.5) * 0.5,
+  ).normalize().multiplyScalar(0.55 + Math.random() * 0.75);
+  line.position.set(
+    (Math.random() - 0.5) * 65,
+    (Math.random() - 0.5) * 65,
+    (Math.random() - 0.5) * 35,
+  );
+  line.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), rawSpd.clone().normalize());
+  scene.add(line);
+  return { line, spd: rawSpd, life: Math.random() * 4, maxLife: 3 + Math.random() * 2.5 };
+});
+
+/* ──────────────────────────────────────────────────────────────
    CLICK PARTICLE BURST
    ────────────────────────────────────────────────────────────── */
 const clickBursts = [];
@@ -300,6 +366,7 @@ window.addEventListener('click', e => {
    STATE
    ────────────────────────────────────────────────────────────── */
 const clock   = new THREE.Clock();
+let prevT     = 0;
 let mouseX    = 0;
 let mouseY    = 0;
 let scrollPct = 0;   // 0 → 1 across full page
@@ -329,7 +396,9 @@ window.addEventListener('resize', () => {
 function animate() {
   requestAnimationFrame(animate);
 
-  const t = clock.getElapsedTime();
+  const t  = clock.getElapsedTime();
+  const dt = Math.min(t - prevT, 0.05); // cap delta to avoid tab-blur jump
+  prevT = t;
 
   /* Particle field — slow global rotation */
   particles.rotation.x =  t * 0.0045;
@@ -357,6 +426,52 @@ function animate() {
     ring.material.opacity = 0.08 + Math.abs(Math.sin(t * 0.4 + phase)) * 0.12;
   });
 
+  /* Signal pulses — travel along lymph edges */
+  if (edges.length > 0) {
+    pulseData.forEach(p => {
+      p.t += p.speed * dt;
+      if (p.t > 1) {
+        p.t = 0;
+        p.edgeIdx = Math.floor(Math.random() * edges.length);
+      }
+      const edge = edges[p.edgeIdx];
+      p.mesh.position.lerpVectors(edge.start, edge.end, p.t);
+      p.mesh.material.opacity = Math.sin(p.t * Math.PI) * 0.92;
+    });
+  }
+
+  /* Shooting stars */
+  starData.forEach(star => {
+    star.life += dt;
+    const prog = star.life / star.maxLife;
+    if (prog < 0.25) {
+      star.line.material.opacity = (prog / 0.25) * 0.78;
+    } else if (prog < 0.72) {
+      star.line.material.opacity = 0.78;
+    } else {
+      star.line.material.opacity = ((1 - prog) / 0.28) * 0.78;
+    }
+    star.line.position.addScaledVector(star.spd, dt * 14);
+    if (star.life >= star.maxLife) {
+      star.line.position.set(
+        (Math.random() - 0.5) * 65,
+        (Math.random() - 0.5) * 65,
+        (Math.random() - 0.5) * 35,
+      );
+      star.spd = new THREE.Vector3(
+        (Math.random() - 0.5) * 1.4,
+        (Math.random() - 0.5) * 1.4,
+        (Math.random() - 0.5) * 0.5,
+      ).normalize().multiplyScalar(0.55 + Math.random() * 0.75);
+      star.line.quaternion.setFromUnitVectors(
+        new THREE.Vector3(1, 0, 0),
+        star.spd.clone().normalize(),
+      );
+      star.life    = 0;
+      star.maxLife = 3 + Math.random() * 2.5;
+    }
+  });
+
   /* Moving lights */
   greenLight.position.x = Math.sin(t * 0.28) *  9;
   greenLight.position.y = Math.cos(t * 0.20) *  6;
@@ -364,8 +479,8 @@ function animate() {
   goldLight.position.y  = Math.sin(t * 0.32) *   7;
 
   /* Camera: mouse parallax + scroll depth */
-  camera.position.x += (mouseX * 4.5 - camera.position.x) * 0.040;
-  camera.position.y += (-mouseY * 3.2 - camera.position.y) * 0.040;
+  camera.position.x += (mouseX * MOUSE_PARALLAX_X  - camera.position.x) * CAMERA_LERP_FACTOR;
+  camera.position.y += (-mouseY * MOUSE_PARALLAX_Y - camera.position.y) * CAMERA_LERP_FACTOR;
   camera.position.z  = 22 - scrollPct * 9;
   camera.lookAt(scene.position);
 
@@ -410,6 +525,10 @@ function animate() {
     }
   }
 
+  /* FOV breathing — subtle inhale/exhale feel */
+  camera.fov = 60 + Math.sin(t * 0.14) * 2.2;
+  camera.updateProjectionMatrix();
+
   renderer.render(scene, camera);
 }
 
@@ -438,14 +557,18 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
    ────────────────────────────────────────────────────────────── */
 document.querySelectorAll('.card-3d').forEach(card => {
   card.addEventListener('mousemove', e => {
-    const r = card.getBoundingClientRect();
-    const x = (e.clientX - r.left)  / r.width  - 0.5;
-    const y = (e.clientY - r.top)   / r.height - 0.5;
+    const r     = card.getBoundingClientRect();
+    const normX = (e.clientX - r.left) / r.width;  // 0 → 1 left-to-right
+    const normY = (e.clientY - r.top)  / r.height; // 0 → 1 top-to-bottom
+    card.style.setProperty('--shine-x', `${normX * 100}%`);
+    card.style.setProperty('--shine-y', `${normY * 100}%`);
     card.style.transform =
-      `perspective(640px) rotateX(${-y * 20}deg) rotateY(${x * 20}deg) translateZ(18px)`;
+      `perspective(640px) rotateX(${-(normY - 0.5) * 20}deg) rotateY(${(normX - 0.5) * 20}deg) translateZ(18px)`;
   });
 
   card.addEventListener('mouseleave', () => {
+    card.style.removeProperty('--shine-x');
+    card.style.removeProperty('--shine-y');
     card.style.transform =
       'perspective(640px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
   });
@@ -489,3 +612,103 @@ if (cursorDot) {
     el.addEventListener('mouseleave', () => cursorDot.classList.remove('expanded'));
   });
 }
+
+/* ──────────────────────────────────────────────────────────────
+   CURSOR RING  (lagging ring element behind the dot)
+   ────────────────────────────────────────────────────────────── */
+const cursorRingEl = document.getElementById('cursor-ring-el');
+if (cursorRingEl) {
+  let ringX = 0, ringY = 0;
+  let dotX  = 0, dotY  = 0;
+
+  window.addEventListener('mousemove', e => { dotX = e.clientX; dotY = e.clientY; });
+
+  document.querySelectorAll('a, button, .card-3d, .disease-card, .step').forEach(el => {
+    el.addEventListener('mouseenter', () => cursorRingEl.classList.add('hover'));
+    el.addEventListener('mouseleave', () => cursorRingEl.classList.remove('hover'));
+  });
+
+  (function animRing() {
+    ringX += (dotX - ringX) * RING_LAG_FACTOR;
+    ringY += (dotY - ringY) * RING_LAG_FACTOR;
+    cursorRingEl.style.left = ringX + 'px';
+    cursorRingEl.style.top  = ringY + 'px';
+    requestAnimationFrame(animRing);
+  })();
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MAGNETIC CTA BUTTON
+   ────────────────────────────────────────────────────────────── */
+const ctaBtn = document.querySelector('.cta-btn');
+if (ctaBtn) {
+  ctaBtn.addEventListener('mousemove', e => {
+    const r  = ctaBtn.getBoundingClientRect();
+    const dx = (e.clientX - (r.left + r.width  / 2)) * 0.35;
+    const dy = (e.clientY - (r.top  + r.height / 2)) * 0.35;
+    ctaBtn.style.transform = `translateY(-4px) scale(1.04) translate(${dx}px, ${dy}px)`;
+  });
+  ctaBtn.addEventListener('mouseleave', () => {
+    ctaBtn.style.transform = '';
+  });
+}
+
+/* ──────────────────────────────────────────────────────────────
+   GLITCH TEXT  (fires on highlight hover; works with gradient text)
+   ────────────────────────────────────────────────────────────── */
+document.querySelectorAll('.section-title .highlight').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    el.classList.add('glitch');
+    setTimeout(() => el.classList.remove('glitch'), 580);
+  });
+});
+
+/* ──────────────────────────────────────────────────────────────
+   ANIMATED COUNTERS  (fires once when stats strip scrolls into view)
+   ────────────────────────────────────────────────────────────── */
+function animateCounter(el, target, suffix) {
+  let current = 0;
+  const step  = target / COUNTER_ANIMATION_STEPS;
+  const id    = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = Math.round(current) + suffix;
+    if (current >= target) clearInterval(id);
+  }, 22);
+}
+
+const statsObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.querySelectorAll('[data-count]').forEach(counter => {
+      animateCounter(counter, parseFloat(counter.dataset.count), counter.dataset.suffix || '');
+    });
+    statsObs.unobserve(e.target);
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.stats-strip').forEach(el => statsObs.observe(el));
+
+/* ──────────────────────────────────────────────────────────────
+   FLOATING HERO PARTICLES  (generated via JS, styled by CSS)
+   ────────────────────────────────────────────────────────────── */
+(function spawnHeroParticles() {
+  const hero = document.getElementById('hero');
+  if (!hero) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'hero-particles';
+  wrap.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    p.className = 'hero-particle';
+    p.style.cssText = [
+      `left:${Math.random() * 100}%`,
+      `bottom:${Math.random() * 25}%`,
+      `--dur:${4 + Math.random() * 5}s`,
+      `--delay:${Math.random() * 7}s`,
+      `width:${1.5 + Math.random() * 2.5}px`,
+      `height:${1.5 + Math.random() * 2.5}px`,
+      `background:${Math.random() > 0.45 ? 'var(--green)' : 'var(--gold)'}`,
+    ].join(';');
+    wrap.appendChild(p);
+  }
+  hero.appendChild(wrap);
+})();

@@ -971,3 +971,270 @@ footer {
   .cards-grid { grid-template-columns: 1fr; }
   .disease-grid { grid-template-columns: 1fr; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   EXTREME INTERACTIVITY v2 — Additional Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Hide native cursor on pointer devices ──────────────────────── */
+/* Scoped to body and interactive elements to avoid interfering with
+   OS-level resize/text cursors on external widgets */
+@media (pointer: fine) {
+  body, body a, body button, body label,
+  body input, body select, body textarea { cursor: none !important; }
+  body pre, body code, body input[type="text"],
+  body input[type="search"], body textarea { cursor: text !important; }
+}
+
+/* ── Cursor lag-ring ────────────────────────────────────────────── */
+#cursor-ring-el {
+  position: fixed;
+  width: 42px; height: 42px;
+  border: 1.5px solid rgba(0, 232, 122, 0.48);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.22s ease, height 0.22s ease,
+              border-color 0.22s ease, background 0.22s ease;
+  mix-blend-mode: screen;
+}
+#cursor-ring-el.hover {
+  width: 70px; height: 70px;
+  border-color: rgba(0, 232, 122, 0.90);
+  background: rgba(0, 232, 122, 0.06);
+}
+@media (pointer: coarse) { #cursor-ring-el { display: none; } }
+
+/* ── Card mouse-follow highlight (CSS custom props set by JS) ───── */
+.card-3d {
+  position: relative;
+  overflow: hidden;
+}
+.card-3d::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--shine-x, 50%) var(--shine-y, 50%),
+    rgba(255,255,255,0.09) 0%,
+    transparent 58%
+  );
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+  z-index: 3;
+  border-radius: inherit;
+}
+.card-3d:hover::before { opacity: 1; }
+
+/* Sweep shimmer on card hover */
+.card-3d::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255,255,255,0.04) 38%,
+    rgba(255,255,255,0.11) 50%,
+    rgba(255,255,255,0.04) 62%,
+    transparent 100%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.72s ease;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: inherit;
+}
+.card-3d:hover::after { transform: translateX(130%); }
+
+/* ── Stats strip ────────────────────────────────────────────────── */
+.stats-strip {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+.stat-item { text-align: center; }
+.stat-num {
+  font-family: var(--font-head);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--green);
+  text-shadow: var(--green-glow);
+  line-height: 1;
+  display: block;
+}
+.stat-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 0.3rem;
+  display: block;
+}
+
+/* ── Floating hero particles ────────────────────────────────────── */
+.hero-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.hero-particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: floatUp var(--dur, 5s) ease-in-out var(--delay, 0s) infinite;
+}
+@keyframes floatUp {
+  0%   { opacity: 0;    transform: translateY(0)     scale(0.5); }
+  20%  { opacity: 0.70; }
+  80%  { opacity: 0.30; }
+  100% { opacity: 0;    transform: translateY(-130px) scale(1.4); }
+}
+
+/* ── Glitch text on section title hover ─────────────────────────── */
+/* Works with gradient/background-clip text — uses transform+filter */
+.highlight {
+  display: inline-block;
+}
+.highlight.glitch {
+  animation: shimmer-sweep 3.5s linear infinite, textGlitch 0.55s steps(3) 1;
+}
+@keyframes textGlitch {
+  0%   { transform: translateX(-3px) skewX(-5deg); filter: hue-rotate(0deg)   brightness(1.6); }
+  20%  { transform: translateX(3px)  skewX(5deg);  filter: hue-rotate(90deg)  brightness(1.3); }
+  40%  { transform: translateX(-2px) skewX(-2deg); filter: hue-rotate(180deg); }
+  60%  { transform: translateX(2px)  skewX(2deg);  filter: hue-rotate(270deg) brightness(1.2); }
+  80%  { transform: translateX(-1px);              filter: hue-rotate(360deg); }
+  100% { transform: translateX(0);                 filter: none; }
+}
+
+/* ── Staggered card entrance on section reveal ──────────────────── */
+.cards-grid      > .card-3d,
+.yahki-grid      > .yahki-card,
+.food-categories > .food-cat,
+.disease-grid    > .disease-card,
+.healing-steps   > .step {
+  opacity: 0;
+  /* Match the parent .reveal values (48px / 6deg) for visual consistency */
+  transform: perspective(1000px) translateY(48px) rotateX(6deg) scale(0.97);
+  transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
+  transform-origin: bottom center;
+}
+.reveal.visible .cards-grid      > .card-3d,
+.reveal.visible .yahki-grid      > .yahki-card,
+.reveal.visible .food-categories > .food-cat,
+.reveal.visible .disease-grid    > .disease-card,
+.reveal.visible .healing-steps   > .step {
+  opacity: 1;
+  transform: perspective(1000px) translateY(0) rotateX(0) scale(1);
+}
+.reveal.visible .cards-grid      > .card-3d:nth-child(1),
+.reveal.visible .yahki-grid      > .yahki-card:nth-child(1),
+.reveal.visible .food-categories > .food-cat:nth-child(1),
+.reveal.visible .disease-grid    > .disease-card:nth-child(1),
+.reveal.visible .healing-steps   > .step:nth-child(1)  { transition-delay: 0.05s; }
+.reveal.visible .cards-grid      > .card-3d:nth-child(2),
+.reveal.visible .yahki-grid      > .yahki-card:nth-child(2),
+.reveal.visible .food-categories > .food-cat:nth-child(2),
+.reveal.visible .disease-grid    > .disease-card:nth-child(2),
+.reveal.visible .healing-steps   > .step:nth-child(2)  { transition-delay: 0.12s; }
+.reveal.visible .cards-grid      > .card-3d:nth-child(3),
+.reveal.visible .yahki-grid      > .yahki-card:nth-child(3),
+.reveal.visible .food-categories > .food-cat:nth-child(3),
+.reveal.visible .disease-grid    > .disease-card:nth-child(3),
+.reveal.visible .healing-steps   > .step:nth-child(3)  { transition-delay: 0.19s; }
+.reveal.visible .cards-grid      > .card-3d:nth-child(4),
+.reveal.visible .yahki-grid      > .yahki-card:nth-child(4),
+.reveal.visible .food-categories > .food-cat:nth-child(4),
+.reveal.visible .disease-grid    > .disease-card:nth-child(4),
+.reveal.visible .healing-steps   > .step:nth-child(4)  { transition-delay: 0.26s; }
+.reveal.visible .cards-grid      > .card-3d:nth-child(5),
+.reveal.visible .yahki-grid      > .yahki-card:nth-child(5),
+.reveal.visible .food-categories > .food-cat:nth-child(5),
+.reveal.visible .disease-grid    > .disease-card:nth-child(5),
+.reveal.visible .healing-steps   > .step:nth-child(5)  { transition-delay: 0.33s; }
+.reveal.visible .cards-grid      > .card-3d:nth-child(6),
+.reveal.visible .yahki-grid      > .yahki-card:nth-child(6),
+.reveal.visible .food-categories > .food-cat:nth-child(6),
+.reveal.visible .disease-grid    > .disease-card:nth-child(6),
+.reveal.visible .healing-steps   > .step:nth-child(6)  { transition-delay: 0.40s; }
+
+/* ── Truth card border pulse ────────────────────────────────────── */
+.truth-card.savior {
+  animation: saviorPulse 3.5s ease-in-out infinite;
+}
+.truth-card.problem {
+  animation: warnPulse 3.5s ease-in-out infinite;
+}
+@keyframes saviorPulse {
+  0%, 100% { border-color: rgba(0,232,122,0.22); box-shadow: inset 0 0 30px rgba(0,232,122,0.04); }
+  50%       { border-color: rgba(0,232,122,0.52); box-shadow: inset 0 0 55px rgba(0,232,122,0.12), 0 0 28px rgba(0,232,122,0.10); }
+}
+@keyframes warnPulse {
+  0%, 100% { border-color: rgba(245,166,35,0.22); box-shadow: inset 0 0 30px rgba(245,166,35,0.04); }
+  50%       { border-color: rgba(245,166,35,0.52); box-shadow: inset 0 0 55px rgba(245,166,35,0.12), 0 0 28px rgba(245,166,35,0.10); }
+}
+
+/* ── Closing heading pulse ──────────────────────────────────────── */
+.closing-inner h2 {
+  animation: headingPulse 4s ease-in-out infinite;
+}
+@keyframes headingPulse {
+  0%, 100% { text-shadow: var(--green-glow-lg); }
+  50%       { text-shadow: 0 0 80px rgba(0,232,122,0.75), 0 0 160px rgba(0,232,122,0.35); }
+}
+
+/* ── Disease card 3D lift on hover ─────────────────────────────── */
+.disease-card {
+  transition: transform 0.22s ease, border-color 0.22s ease,
+              background 0.22s ease, box-shadow 0.22s ease !important;
+}
+.disease-card:hover {
+  transform: perspective(500px) translateZ(14px) scale(1.04);
+  box-shadow: 0 8px 36px rgba(245,166,35,0.22) !important;
+}
+
+/* ── Nav link glow on hover ─────────────────────────────────────── */
+.nav-links a:hover {
+  text-shadow: 0 0 14px rgba(0,232,122,0.65);
+}
+
+/* ── Step number brightens on hover ────────────────────────────── */
+.step:hover .step-num {
+  color: rgba(0,232,122,0.50);
+  text-shadow: 0 0 40px rgba(0,232,122,0.35);
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* ── Section top gradient rule ──────────────────────────────────── */
+.section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 8%; right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.14), transparent);
+  pointer-events: none;
+}
+
+/* ── Yahki card top border shimmer ─────────────────────────────── */
+.yahki-card::before {
+  background: linear-gradient(90deg, var(--green), var(--gold), var(--green));
+  background-size: 200% 100%;
+  animation: borderSlide 4s linear infinite;
+}
+@keyframes borderSlide {
+  0%   { background-position: 0% 50%;   }
+  100% { background-position: 200% 50%; }
+}
+
+/* ── Stats strip responsive ─────────────────────────────────────── */
+@media (max-width: 640px) {
+  .stats-strip { gap: 1.5rem; }
+  .stat-num    { font-size: 1.7rem; }
+}
